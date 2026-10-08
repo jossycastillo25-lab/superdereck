@@ -1,0 +1,345 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Fredoka:wght@500;600;700&display=swap');
+
+:root {
+  font-family: "Fredoka", system-ui, sans-serif;
+  color: #fff;
+  background: #101a46;
+}
+
+* { box-sizing: border-box; }
+html, body, #app { margin: 0; min-height: 100%; width: 100%; }
+body { overflow: hidden; }
+
+.app-shell {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  min-height: 520px;
+  overflow: hidden;
+  background: linear-gradient(150deg, #5bd8f6, #7b63f6 55%, #ff5f87);
+}
+
+.comic-sky {
+  position: absolute;
+  inset: 0;
+  opacity: .22;
+  background-image:
+    linear-gradient(30deg, transparent 45%, #fff 46%, #fff 49%, transparent 50%),
+    linear-gradient(-30deg, transparent 45%, #fff 46%, #fff 49%, transparent 50%);
+  background-size: 160px 160px;
+  pointer-events: none;
+}
+
+.start-screen, .victory-screen, .game-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.start-screen { padding: 20px; }
+
+.hero-logo {
+  position: absolute;
+  top: 7vh;
+  left: 50%;
+  transform: translateX(-50%) rotate(-2deg);
+  text-align: center;
+  z-index: 3;
+  text-shadow: 5px 5px 0 #142052, 8px 8px 0 rgba(0,0,0,.15);
+}
+
+.mini-label {
+  display: inline-block;
+  padding: 5px 13px;
+  border-radius: 999px;
+  background: #ffd63f;
+  color: #142052;
+  font-weight: 800;
+  font-size: 13px;
+  text-shadow: none;
+  transform: rotate(2deg);
+}
+
+.hero-logo h1 {
+  margin: 8px 0 2px;
+  font-size: clamp(44px, 8vw, 88px);
+  line-height: .8;
+  letter-spacing: -2px;
+}
+
+.hero-logo h1 strong { color: #ff4e79; }
+
+.badge {
+  display: inline-block;
+  background: #62e2d1;
+  color: #142052;
+  padding: 6px 15px;
+  border: 4px solid #142052;
+  border-radius: 12px;
+  font-weight: 800;
+  text-shadow: none;
+  transform: rotate(2deg);
+}
+
+.start-card {
+  position: relative;
+  z-index: 4;
+  margin-top: 150px;
+  width: min(520px, 92vw);
+  padding: 26px 25px 30px;
+  text-align: center;
+  border: 6px solid #142052;
+  border-radius: 30px;
+  background: rgba(255,255,255,.94);
+  color: #142052;
+  box-shadow: 12px 12px 0 #142052;
+}
+
+.start-card p { margin: 8px 0; font-size: 18px; font-weight: 700; }
+.start-card .small { font-size: 13px; opacity: .7; }
+
+.pixel-hero {
+  position: relative;
+  width: 86px;
+  height: 92px;
+  margin: -70px auto 10px;
+  filter: drop-shadow(5px 5px 0 #142052);
+}
+.pixel-hero .mask {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  top: 0; left: 13px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: #ff4e79;
+  border: 6px solid #142052;
+  color: #ffd63f;
+  font-size: 28px;
+}
+.pixel-hero .body {
+  position: absolute;
+  width: 54px; height: 43px;
+  left: 16px; top: 48px;
+  border-radius: 15px;
+  background: #2d6df6;
+  border: 6px solid #142052;
+}
+.pixel-hero .cape {
+  position: absolute;
+  left: 5px; top: 51px;
+  width: 20px; height: 48px;
+  background: #ff4e79;
+  clip-path: polygon(0 0,100% 12%,75% 100%,0 78%);
+}
+
+.play-btn {
+  border: 5px solid #142052;
+  background: #ffd63f;
+  color: #142052;
+  font: 800 24px "Fredoka", sans-serif;
+  padding: 13px 34px;
+  border-radius: 16px;
+  box-shadow: 6px 6px 0 #142052;
+  cursor: pointer;
+  transition: transform .12s, box-shadow .12s;
+  margin-top: 12px;
+}
+.play-btn:hover { transform: translate(2px,2px); box-shadow: 4px 4px 0 #142052; }
+.play-btn:active { transform: translate(6px,6px); box-shadow: 0 0 0 #142052; }
+
+.comic-tag {
+  position: absolute;
+  bottom: 5vh;
+  right: 7vw;
+  padding: 9px 15px;
+  background: #ff4e79;
+  border: 4px solid #142052;
+  border-radius: 12px;
+  font-weight: 800;
+  transform: rotate(6deg);
+  z-index: 3;
+}
+
+.burst {
+  position: absolute;
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  opacity: .65;
+  background: repeating-conic-gradient(#ffd63f 0 8deg, transparent 8deg 18deg);
+}
+.burst-one { left: -60px; top: 80px; }
+.burst-two { right: -70px; bottom: 50px; transform: rotate(20deg); }
+
+.game-screen {
+  background: #7bd8ff;
+  display: block;
+}
+.phaser-container {
+  width: 100%;
+  height: calc(100% - 52px);
+  display: grid;
+  place-items: center;
+}
+.phaser-container canvas {
+  max-width: 100%;
+  max-height: 100%;
+  border: 5px solid #142052;
+  border-radius: 16px;
+  box-shadow: 0 10px 0 rgba(20,32,82,.3);
+}
+
+.hud {
+  height: 52px;
+  position: absolute;
+  z-index: 10;
+  inset: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px;
+  background: rgba(16,26,70,.9);
+  border-bottom: 4px solid #ffd63f;
+}
+.hud-pill {
+  padding: 6px 13px;
+  border-radius: 999px;
+  background: #fff;
+  color: #142052;
+  font-weight: 800;
+}
+.hud-title { font-weight: 800; letter-spacing: 1px; }
+.touch-hint {
+  position: absolute;
+  bottom: 8px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 12;
+  background: rgba(20,32,82,.78);
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+.victory-screen {
+  background:
+    radial-gradient(circle at 20% 20%, #ffd63f 0 4%, transparent 5%),
+    radial-gradient(circle at 80% 25%, #62e2d1 0 5%, transparent 6%),
+    linear-gradient(145deg, #ff5f87, #795cff 50%, #2bc8c2);
+  overflow: hidden;
+}
+.victory-card {
+  position: relative;
+  z-index: 8;
+  width: min(600px, 92vw);
+  max-height: 94vh;
+  overflow: auto;
+  padding: 18px 22px 22px;
+  text-align: center;
+  color: #142052;
+  background: rgba(255,255,255,.97);
+  border: 7px solid #142052;
+  border-radius: 32px;
+  box-shadow: 14px 14px 0 #142052;
+}
+.victory-top {
+  display: inline-block;
+  padding: 7px 14px;
+  color: #fff;
+  background: #ff4e79;
+  border: 4px solid #142052;
+  border-radius: 12px;
+  font-weight: 800;
+  transform: rotate(-2deg);
+}
+.photo-frame {
+  position: relative;
+  width: min(250px, 62vw);
+  aspect-ratio: 1 / 1.15;
+  margin: 16px auto 10px;
+  padding: 8px;
+  background: #ffd63f;
+  border: 6px solid #142052;
+  border-radius: 22px;
+  box-shadow: 8px 8px 0 #2d6df6;
+  overflow: visible;
+}
+.photo-frame img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+  border-radius: 13px;
+  display: block;
+}
+.comic-star {
+  position: absolute;
+  z-index: 3;
+  top: -19px; right: -19px;
+  display: grid; place-items: center;
+  width: 55px; height: 55px;
+  background: #ff4e79;
+  color: #ffd63f;
+  border: 5px solid #142052;
+  clip-path: polygon(50% 0%,61% 34%,98% 35%,68% 56%,79% 92%,50% 70%,21% 92%,32% 56%,2% 35%,39% 34%);
+  font-size: 25px;
+}
+.victory-card h2 {
+  margin: 10px 0 7px;
+  font-size: clamp(29px, 5vw, 44px);
+  line-height: .95;
+}
+.victory-card h2 span { color: #ff4e79; }
+.score-final { margin: 8px 0; font-size: 16px; }
+.celebrate { font-size: 27px; letter-spacing: 4px; margin: 7px 0; }
+
+.confetti-layer {
+  position: absolute; inset: 0; z-index: 5; pointer-events: none; overflow: hidden;
+}
+.confetti-layer i {
+  position: absolute;
+  top: -20px;
+  width: 10px;
+  height: 18px;
+  border-radius: 2px;
+  background: #ffd63f;
+  animation: fall linear infinite;
+}
+.confetti-layer i:nth-child(3n) { background: #ff4e79; }
+.confetti-layer i:nth-child(3n+1) { background: #62e2d1; }
+.confetti-layer i:nth-child(4n) { background: #7c4dff; }
+
+@keyframes fall {
+  0% { top: -30px; transform: translateY(0) rotate(0); }
+  100% { top: 110vh; transform: translateY(0) rotate(720deg); }
+}
+
+.firework {
+  position: absolute;
+  z-index: 6;
+  font-size: 120px;
+  color: #ffd63f;
+  text-shadow: 0 0 25px #fff;
+  animation: boom 1.5s ease-in-out infinite;
+}
+.fw1 { top: 5%; left: 8%; }
+.fw2 { top: 10%; right: 9%; animation-delay: .4s; color: #62e2d1; }
+.fw3 { bottom: 4%; left: 12%; animation-delay: .8s; color: #ff4e79; }
+@keyframes boom {
+  0%,100% { transform: scale(.45); opacity: .35; }
+  50% { transform: scale(1); opacity: 1; }
+}
+
+@media (max-width: 600px) {
+  .app-shell { min-height: 100svh; }
+  .hero-logo { top: 5vh; }
+  .hero-logo h1 { font-size: 52px; }
+  .start-card { margin-top: 145px; padding: 22px 17px 24px; }
+  .comic-tag { bottom: 3vh; right: 4vw; font-size: 12px; }
+  .hud-title { display: none; }
+  .victory-card { border-width: 5px; box-shadow: 8px 8px 0 #142052; }
+  .victory-card h2 { font-size: 30px; }
+  .photo-frame { width: 190px; }
+  .firework { font-size: 75px; }
+}
