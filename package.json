@@ -1,4 +1,4 @@
-{{
+{
   "name": "dereck-superhero-root",
   "version": "1.0.0",
   "scripts": {
@@ -7,4 +7,3 @@
     "start": "node backend/Server.js"
   }
 }
-  
