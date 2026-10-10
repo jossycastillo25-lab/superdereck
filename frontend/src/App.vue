@@ -48,6 +48,15 @@
         <div class="crt"></div>
       </div>
 
+      <div class="touch-controls">
+        <div class="tc-group">
+          <button v-for="b in padMove" :key="b.k" class="tc-btn" @pointerdown.prevent="setTouch(b.k, true)" @pointerup.prevent="setTouch(b.k, false)" @pointercancel="setTouch(b.k, false)" @pointerleave="setTouch(b.k, false)" @contextmenu.prevent>{{ b.l }}</button>
+        </div>
+        <div class="tc-group">
+          <button v-for="b in (selectedCharacter?.id === 'dereck' ? padFly : padJump)" :key="b.k" class="tc-btn" @pointerdown.prevent="setTouch(b.k, true)" @pointerup.prevent="setTouch(b.k, false)" @pointercancel="setTouch(b.k, false)" @pointerleave="setTouch(b.k, false)" @contextmenu.prevent>{{ b.l }}</button>
+        </div>
+      </div>
+
       <div class="controls-guide">
         <span v-if="selectedCharacter?.id === 'dereck'">
           <b class="key">↑ ↓ ← →</b> volar · <b class="key">ESPACIO</b> disparar láser · cae sobre los malos para aplastarlos
@@ -189,6 +198,18 @@ const selectedCharacter = ref(characters.value[0]);
 const selectedDiff = ref(difficulties[1]);
 let gameInstance = null;
 
+/* ---------- Controles táctiles ---------- */
+const touch = { left: false, right: false, up: false, down: false, jump: false, jumpQ: false, fire: false, fireQ: false };
+const padMove = [{ k: 'left', l: '◀' }, { k: 'right', l: '▶' }];
+const padFly = [{ k: 'up', l: '▲' }, { k: 'down', l: '▼' }, { k: 'fire', l: '⚡' }];
+const padJump = [{ k: 'jump', l: 'SALTAR' }];
+const setTouch = (k, on) => {
+  touch[k] = on;
+  if (on && k === 'jump') touch.jumpQ = true;
+  if (on && k === 'fire') touch.fireQ = true;
+};
+const resetTouch = () => Object.keys(touch).forEach(k => { touch[k] = false; });
+
 /* ---------- Backend ---------- */
 const fetchBestScore = async () => {
   try {
@@ -204,7 +225,7 @@ const saveScoreToBackend = async (finalScore) => {
     });
     if (res.ok) {
       const data = await res.json();
-      if (finalScore >= data.bestScore && finalScore > 0) isNewRecord.value = true;
+      if (data.newRecord) isNewRecord.value = true;
       bestScore.value = data.bestScore;
     }
   } catch { /* sin backend */ }
@@ -402,7 +423,7 @@ class MainScene extends Phaser.Scene {
     this.time.addEvent({ delay: 2200, loop: true, callback: () => { if (b.active && b.body.blocked.down) b.setVelocityY(-520); } });
 
     // Checkpoints
-    [2000, 3800].forEach(x => {
+    [2080, 4000].forEach(x => {
       const pole = this.add.rectangle(x, GROUND_Y - 40, 6, 80, 0x94a3b8).setDepth(2);
       const flag = this.add.triangle(x + 16, GROUND_Y - 68, 0, 0, 0, 24, 28, 12, 0x64748b).setDepth(2);
       this.cps.push({ x, flag, on: false, pole });
@@ -546,25 +567,29 @@ class MainScene extends Phaser.Scene {
     elapsed.value = Math.floor((time - this.startTime) / 1000);
     if (p.x > 4900) bossActive.value = true;
 
-    if (c.left.isDown) this.facing = -1; else if (c.right.isDown) this.facing = 1;
+    const L = c.left.isDown || touch.left, R = c.right.isDown || touch.right;
+    const U = c.up.isDown || touch.up, D = c.down.isDown || touch.down;
+    if (L) this.facing = -1; else if (R) this.facing = 1;
     p.setFlipX(this.facing < 0);
 
     if (time >= this.noCtl) {
       if (this.hero === 'dereck') {
-        p.setVelocityX(c.right.isDown ? 300 : c.left.isDown ? -300 : 0);
-        let vy = c.up.isDown ? -280 : c.down.isDown ? 280 : 40;
+        p.setVelocityX(R ? 300 : L ? -300 : 0);
+        let vy = U ? -280 : D ? 280 : 40;
         if (p.y < 30 && vy < 0) vy = 0;
         p.setVelocityY(vy);
-        if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) this.fire();
+        if (Phaser.Input.Keyboard.JustDown(this.spaceKey) || touch.fireQ) this.fire();
+        touch.fireQ = false;
       } else {
-        p.setVelocityX(c.right.isDown ? 270 : c.left.isDown ? -270 : 0);
+        p.setVelocityX(R ? 270 : L ? -270 : 0);
         const onGround = b.blocked.down || b.touching.down;
         if (onGround) this.lastGround = time;
-        const jumpPressed = Phaser.Input.Keyboard.JustDown(this.spaceKey) || Phaser.Input.Keyboard.JustDown(c.up);
+        const jumpPressed = Phaser.Input.Keyboard.JustDown(this.spaceKey) || Phaser.Input.Keyboard.JustDown(c.up) || touch.jumpQ;
+        touch.jumpQ = false;
         if (jumpPressed && time - this.lastGround < 110) {
           p.setVelocityY(-640); this.lastGround = 0; sfx(420, 0.15, 'square', 300);
         }
-        if (!(c.up.isDown || this.spaceKey.isDown) && b.velocity.y < -250) p.setVelocityY(b.velocity.y * 0.85);
+        if (!(U || this.spaceKey.isDown || touch.jump) && b.velocity.y < -250) p.setVelocityY(b.velocity.y * 0.85);
         if (this.hero === 'geometry') p.angle = onGround ? Math.round(p.angle / 90) * 90 : p.angle + 7 * this.facing;
       }
     }
@@ -900,6 +925,11 @@ watch(gameState, async (newState) => {
 /* ---------- Control del juego ---------- */
 const startGame = async () => {
   destroyGame();
+  resetTouch();
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } catch { /* sin audio */ }
   gameState.value = 'playing';
   score.value = 0; starsCollected.value = 0; elapsed.value = 0; timeBonus.value = 0;
   lives.value = selectedDiff.value.lives; isNewRecord.value = false; bossActive.value = false;
@@ -1122,6 +1152,16 @@ onBeforeUnmount(() => { destroyGame(); stopFx(); stopMelody(); });
 .rainbow-text { color: #facc15; animation: textGlow 1s infinite alternate; }
 @keyframes textGlow { 0% { text-shadow: 0 0 5px #facc15; } 100% { text-shadow: 0 0 12px #ef4444, 0 0 18px #facc15; } }
 .btn-row.reveal { position: relative; z-index: 2; }
+
+/* Controles táctiles (solo en pantallas táctiles) */
+.touch-controls { display: none; }
+@media (hover: none) and (pointer: coarse) {
+  .touch-controls { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; width: 960px; max-width: 100%; margin-top: 12px; padding: 0 8px; box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: none; }
+  .controls-guide { display: none; }
+}
+.tc-group { display: flex; gap: 8px; }
+.tc-btn { font-family: inherit; font-size: 1.1rem; min-width: clamp(48px, 13vw, 76px); height: clamp(52px, 14vw, 76px); padding: 0 10px; color: #fff; background: rgba(30,41,59,.92); border: 4px solid #facc15; border-radius: 14px; box-shadow: 0 5px 0 #000; touch-action: none; user-select: none; -webkit-user-select: none; }
+.tc-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #000; background: #334155; }
 
 /* Ajustes Responsive para Pantallas Pequeñas */
 @media (max-width: 480px) {
